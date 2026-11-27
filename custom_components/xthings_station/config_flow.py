@@ -14,7 +14,13 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.instance_id import async_get as async_get_instance_id
 
-from .const import CONF_REFRESH_TOKEN, CONF_REMOTE_ACCESS, DOMAIN, LOGGER
+from .const import (
+    CONF_REFRESH_TOKEN,
+    CONF_REMOTE_ACCESS,
+    DEFAULT_REMOTE_ACCESS,
+    DOMAIN,
+    LOGGER,
+)
 from .ha_xthings_cloud import (
     XthingsCloudApiClient,
     XthingsCloudApiError,
@@ -92,7 +98,9 @@ class XthingsCloudConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_REFRESH_TOKEN: token_data["refresh_token"],
                     },
                     options={
-                        CONF_REMOTE_ACCESS: user_input.get(CONF_REMOTE_ACCESS, False),
+                        CONF_REMOTE_ACCESS: user_input.get(
+                            CONF_REMOTE_ACCESS, DEFAULT_REMOTE_ACCESS
+                        ),
                     },
                 )
 
@@ -102,7 +110,9 @@ class XthingsCloudConfigFlow(ConfigFlow, domain=DOMAIN):
                 {
                     probatio.Required(CONF_EMAIL): str,
                     probatio.Required(probatio.Secret(CONF_PASSWORD)): str,
-                    probatio.Required(CONF_REMOTE_ACCESS, default=False): bool,
+                    probatio.Required(
+                        CONF_REMOTE_ACCESS, default=DEFAULT_REMOTE_ACCESS
+                    ): bool,
                 }
             ),
             errors=errors,
@@ -130,7 +140,7 @@ class XthingsCloudOptionsFlow(OptionsFlow):
                     probatio.Required(
                         CONF_REMOTE_ACCESS,
                         default=self._config_entry.options.get(
-                            CONF_REMOTE_ACCESS, False
+                            CONF_REMOTE_ACCESS, DEFAULT_REMOTE_ACCESS
                         ),
                     ): bool,
                 }

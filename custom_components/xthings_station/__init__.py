@@ -8,7 +8,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.instance_id import async_get as async_get_instance_id
 from homeassistant.helpers.typing import ConfigType
 
-from .const import CONF_REMOTE_ACCESS, DOMAIN, LOGGER
+from .const import CONF_REMOTE_ACCESS, DEFAULT_REMOTE_ACCESS, DOMAIN, LOGGER
 from .coordinator import XthingsCloudConfigEntry, XthingsCloudRuntimeData
 from .ha_xthings_cloud import XthingsCloudApiClient, XthingsCloudApiError
 from .remote_access import async_disable_remote_access, async_enable_remote_access
@@ -33,13 +33,15 @@ async def async_setup_entry(
     entry.runtime_data = runtime_data
     await runtime_data.async_start_websocket()
 
-    if entry.options.get(CONF_REMOTE_ACCESS, False):
+    if entry.options.get(CONF_REMOTE_ACCESS, DEFAULT_REMOTE_ACCESS):
         await _async_bind_and_enable_remote_access(hass, client)
 
-    remote_access_enabled = entry.options.get(CONF_REMOTE_ACCESS, False)
+    remote_access_enabled = entry.options.get(
+        CONF_REMOTE_ACCESS, DEFAULT_REMOTE_ACCESS
+    )
     async def _async_entry_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
         nonlocal remote_access_enabled
-        enabled = entry.options.get(CONF_REMOTE_ACCESS, False)
+        enabled = entry.options.get(CONF_REMOTE_ACCESS, DEFAULT_REMOTE_ACCESS)
         if enabled == remote_access_enabled:
             return
         remote_access_enabled = enabled
@@ -68,7 +70,7 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
     """Apply integration option changes."""
     session = async_get_clientsession(hass)
     client = XthingsCloudApiClient(session, token=entry.data[CONF_TOKEN])
-    if entry.options.get(CONF_REMOTE_ACCESS, False):
+    if entry.options.get(CONF_REMOTE_ACCESS, DEFAULT_REMOTE_ACCESS):
         await _async_bind_and_enable_remote_access(hass, client)
     else:
         await async_disable_remote_access(hass)
