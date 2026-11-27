@@ -1,4 +1,4 @@
-"""Xthings Cloud browser SSO callback."""
+"""Xthings Station browser SSO callback."""
 
 from collections.abc import Mapping
 from datetime import timedelta
@@ -8,8 +8,6 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from aiohttp import web
-from ha_xthings_cloud import XthingsCloudApiClient, XthingsCloudApiError
-
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.http.auth_util import async_user_not_allowed_do_auth
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
@@ -18,9 +16,11 @@ from homeassistant.helpers.http import KEY_HASS
 from homeassistant.helpers.instance_id import async_get as async_get_instance_id
 
 from .const import DOMAIN, LOGGER
+from .ha_xthings_cloud import XthingsCloudApiClient, XthingsCloudApiError
 
 SSO_URL = "/api/xthings_cloud/sso/callback"
-SSO_CLIENT_NAME = "Xthings Cloud SSO"
+SSO_CLIENT_NAME = "Xthings Station SSO"
+LEGACY_SSO_CLIENT_NAME = "Xthings Cloud SSO"
 SSO_ACCESS_TOKEN_EXPIRATION = timedelta(minutes=5)
 
 
@@ -137,7 +137,7 @@ class XthingsSsoManager:
         if user is None:
             return
         for refresh_token in list(user.refresh_tokens.values()):
-            if refresh_token.client_name == SSO_CLIENT_NAME:
+            if refresh_token.client_name in {SSO_CLIENT_NAME, LEGACY_SSO_CLIENT_NAME}:
                 self.hass.auth.async_remove_refresh_token(refresh_token)
 
 
@@ -145,7 +145,7 @@ class XthingsSsoView(HomeAssistantView):
     """Accept a one-time Cloud code and return the same-origin bridge."""
 
     url = SSO_URL
-    name = "api:xthings_cloud_station:sso_callback"
+    name = "api:xthings_station:sso_callback"
     requires_auth = False
     cors_allowed = False
 

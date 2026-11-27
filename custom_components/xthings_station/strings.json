@@ -27,12 +27,12 @@
           "remote_access": "Enable remote access"
         },
         "data_description": {
-          "email": "The email address used to register your Xthings Cloud account.",
-          "password": "Your Xthings Cloud account password.",
-          "remote_access": "Expose Home Assistant through an Xthings Cloud FRP tunnel."
+          "email": "The email address used to register your Xthings account.",
+          "password": "Your Xthings account password.",
+          "remote_access": "Expose Home Assistant through an Xthings Station FRP tunnel."
         },
-        "description": "Please enter your Xthings Cloud account credentials.",
-        "title": "Xthings Cloud Login"
+        "description": "Please enter your Xthings account credentials.",
+        "title": "Xthings Station Login"
       }
     }
   },
@@ -44,8 +44,8 @@
           "sso_ha_user_id": "Home Assistant user for remote sign-in"
         },
         "data_description": {
-          "remote_access": "Expose Home Assistant through an Xthings Cloud FRP tunnel.",
-          "sso_ha_user_id": "Choose the HA user who may sign in through Xthings Cloud. Leave blank to disable SSO."
+          "remote_access": "Expose Home Assistant through an Xthings Station FRP tunnel.",
+          "sso_ha_user_id": "Choose the HA user who may sign in through Xthings Station. Leave blank to disable SSO."
         }
       }
     }

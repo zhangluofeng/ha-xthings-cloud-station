@@ -1,4 +1,4 @@
-"""FRPC download and configuration helpers for Xthings Cloud Station."""
+"""FRPC download and configuration helpers for Xthings Station."""
 
 import asyncio
 import configparser

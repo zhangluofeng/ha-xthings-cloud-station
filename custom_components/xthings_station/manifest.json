@@ -1,6 +1,6 @@
 {
-  "domain": "xthings_cloud_station",
-  "name": "Xthings Cloud Station",
+  "domain": "xthings_station",
+  "name": "Xthings Station",
   "codeowners": ["@zhangluofeng"],
   "config_flow": true,
   "connectivity": ["cloud"],
@@ -8,9 +8,8 @@
   "documentation": "https://github.com/zhangluofeng/ha-xthings-cloud-station",
   "integration_type": "hub",
   "iot_class": "cloud_push",
-  "loggers": ["ha_xthings_cloud"],
+  "loggers": ["custom_components.xthings_station"],
   "quality_scale": "bronze",
-  "requirements": ["ha-xthings-cloud==1.0.8"],
   "single_config_entry": true,
-  "version": "0.3.3"
+  "version": "0.4.0"
 }

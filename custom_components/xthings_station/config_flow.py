@@ -1,14 +1,8 @@
-"""Config flow for Xthings Cloud."""
+"""Config flow for Xthings Station."""
 
 from typing import Any, override
 
-from ha_xthings_cloud import (
-    XthingsCloudApiClient,
-    XthingsCloudApiError,
-    XthingsCloudAuthError,
-)
 import probatio
-
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -21,6 +15,11 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.instance_id import async_get as async_get_instance_id
 
 from .const import CONF_REFRESH_TOKEN, CONF_REMOTE_ACCESS, DOMAIN, LOGGER
+from .ha_xthings_cloud import (
+    XthingsCloudApiClient,
+    XthingsCloudApiError,
+    XthingsCloudAuthError,
+)
 
 ERROR_CODE_MAP: dict[int, str] = {
     20001: "token_invalid",
@@ -45,7 +44,7 @@ def _error_from_exception(err: XthingsCloudApiError) -> str:
 
 
 class XthingsCloudConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Xthings Cloud config flow."""
+    """Xthings Station config flow."""
 
     VERSION = 1
 
@@ -111,7 +110,7 @@ class XthingsCloudConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class XthingsCloudOptionsFlow(OptionsFlow):
-    """Handle Xthings Cloud integration options."""
+    """Handle Xthings Station integration options."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize the options flow."""

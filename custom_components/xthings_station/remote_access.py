@@ -2,21 +2,21 @@
 
 import asyncio
 from pathlib import Path
+from typing import Any
 
-from ha_xthings_cloud import XthingsCloudApiClient
+import yaml
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from yaml.nodes import MappingNode, ScalarNode
 
+from .const import DOMAIN, LOGGER
 from .frp import async_ensure_frpc, build_frpc_toml
 from .frp_process import (
     async_start_frpc,
     async_stop_frpc,
     remove_frpc_config,
 )
-import yaml
-
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-
-from .const import DOMAIN, LOGGER
+from .ha_xthings_cloud import XthingsCloudApiClient
 
 FRPC_CONFIG_FILENAME = "frpc.toml"
 
@@ -46,6 +46,29 @@ async def _async_stop_frpc(hass: HomeAssistant) -> None:
     hass.data.pop(f"{DOMAIN}_frpc_process", None)
 
 
+def _get_http_config(content: str) -> dict[str, Any] | None:
+    """Return the top-level HTTP config without loading include directives."""
+    try:
+        root = yaml.compose(content, Loader=yaml.SafeLoader)
+    except yaml.YAMLError as err:
+        LOGGER.error("Failed to parse configuration.yaml: %s", err)
+        return None
+    if not isinstance(root, MappingNode):
+        return None
+    for key, value in root.value:
+        if not isinstance(key, ScalarNode) or key.value != "http":
+            continue
+        if not isinstance(value, MappingNode):
+            return None
+        try:
+            http_config = yaml.safe_load(yaml.serialize(value))
+        except yaml.YAMLError as err:
+            LOGGER.error("Failed to parse the http configuration: %s", err)
+            return None
+        return http_config if isinstance(http_config, dict) else None
+    return {}
+
+
 def _ensure_http_proxy_config(hass: HomeAssistant) -> None:
     """Ensure HA trusts the local FRP reverse proxy."""
     config_path = Path(hass.config.config_dir) / "configuration.yaml"
@@ -53,24 +76,14 @@ def _ensure_http_proxy_config(hass: HomeAssistant) -> None:
         return
 
     content = config_path.read_text(encoding="utf-8")
-    try:
-        config = yaml.safe_load(content) or {}
-    except yaml.YAMLError:
-        LOGGER.error("Failed to parse configuration.yaml")
+    http_config = _get_http_config(content)
+    if http_config is None:
+        LOGGER.warning(
+            "Could not verify http proxy settings; set use_x_forwarded_for: true "
+            "and add 127.0.0.1 to http.trusted_proxies"
+        )
         return
-
-    http_config = config.get("http")
-    if not isinstance(http_config, dict):
-        http_config = {}
-    http_config["use_x_forwarded_for"] = True
-    trusted = http_config.get("trusted_proxies")
-    if not isinstance(trusted, list):
-        trusted = []
-    if "127.0.0.1" not in trusted:
-        trusted.append("127.0.0.1")
-    http_config["trusted_proxies"] = trusted
-
-    if "http:" not in content:
+    if not http_config:
         block = (
             "\n# Auto-configured by Xthings Cloud for remote access\n"
             "http:\n"
@@ -79,13 +92,15 @@ def _ensure_http_proxy_config(hass: HomeAssistant) -> None:
             "    - 127.0.0.1\n"
         )
         config_path.write_text(content.rstrip() + "\n" + block, encoding="utf-8")
-    else:
-        config["http"] = http_config
-        config_path.write_text(
-            yaml.safe_dump(
-                config, default_flow_style=False, allow_unicode=True, sort_keys=False
-            ),
-            encoding="utf-8",
+        return
+
+    trusted = http_config.get("trusted_proxies")
+    if http_config.get("use_x_forwarded_for") is not True or not (
+        isinstance(trusted, list) and "127.0.0.1" in trusted
+    ):
+        LOGGER.warning(
+            "http proxy settings are incomplete; set use_x_forwarded_for: true "
+            "and add 127.0.0.1 to http.trusted_proxies"
         )
 
 
@@ -101,9 +116,11 @@ async def async_enable_remote_access(
     config_path = _get_frpc_config_path(hass)
     try:
         data = await client.async_get_frp_config(client_id)
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        config_path.write_text(
-            build_frpc_toml(data, _get_ha_port(hass), client_id), encoding="utf-8"
+        await asyncio.to_thread(config_path.parent.mkdir, parents=True, exist_ok=True)
+        await asyncio.to_thread(
+            config_path.write_text,
+            build_frpc_toml(data, _get_ha_port(hass), client_id),
+            encoding="utf-8",
         )
     except Exception as err:  # noqa: BLE001
         LOGGER.error("Failed to get or write FRP config: %s", err)

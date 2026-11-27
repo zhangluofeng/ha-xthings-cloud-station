@@ -1,6 +1,4 @@
-"""Xthings Cloud integration for Home Assistant."""
-
-from ha_xthings_cloud import XthingsCloudApiClient, XthingsCloudApiError
+"""Xthings Station integration for Home Assistant."""
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_TOKEN
@@ -12,6 +10,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import CONF_REMOTE_ACCESS, DOMAIN, LOGGER
 from .coordinator import XthingsCloudConfigEntry, XthingsCloudRuntimeData
+from .ha_xthings_cloud import XthingsCloudApiClient, XthingsCloudApiError
 from .remote_access import async_disable_remote_access, async_enable_remote_access
 from .sso import XthingsSsoView
 
@@ -19,7 +18,7 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the Xthings Cloud integration."""
+    """Set up the Xthings Station integration."""
     hass.http.register_view(XthingsSsoView)
     return True
 

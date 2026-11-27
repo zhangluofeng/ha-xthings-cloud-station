@@ -1,11 +1,5 @@
 """Runtime data for Xthings Cloud remote access and SSO."""
 
-from ha_xthings_cloud import (
-    XthingsCloudApiClient,
-    XthingsCloudAuthError,
-    XthingsCloudWebSocket,
-)
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_TOKEN
 from homeassistant.core import HomeAssistant
@@ -13,6 +7,11 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CONF_REFRESH_TOKEN, LOGGER
+from .ha_xthings_cloud import (
+    XthingsCloudApiClient,
+    XthingsCloudAuthError,
+    XthingsCloudWebSocket,
+)
 from .sso import XthingsSsoManager
 
 type XthingsCloudConfigEntry = ConfigEntry[XthingsCloudRuntimeData]
