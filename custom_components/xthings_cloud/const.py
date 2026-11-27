@@ -2,8 +2,6 @@
 
 import logging
 
-from homeassistant.const import Platform
-
 DOMAIN = "xthings_cloud"
 LOGGER = logging.getLogger(__package__)
 
@@ -13,13 +11,3 @@ CONF_REMOTE_ACCESS = "remote_access"
 
 # FRP artifact distribution base URL
 FRP_S3_BASE_URL = "https://xthings-deploy-package.s3.us-west-2.amazonaws.com/Frp"
-
-# Polling interval (seconds)
-DEFAULT_SCAN_INTERVAL = 1800
-
-PLATFORMS: list[Platform] = [
-    Platform.CAMERA,
-    Platform.LIGHT,
-    Platform.LOCK,
-    Platform.SWITCH,
-]

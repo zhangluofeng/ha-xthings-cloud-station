@@ -18,8 +18,10 @@ It is not part of the official Home Assistant Core integrations and is not revie
 
 ## Features
 
-- Xthings Cloud device discovery and control
-- Optional browser-based SSO login
-- Optional remote-access integration
+- Optional FRP remote access to the Home Assistant instance
+- Optional browser-based SSO login from Xthings Cloud
+
+This integration does not discover or control Xthings Cloud devices. It only
+provides the remote-access tunnel and the SSO callback used by the station.
 
 Review the code and permissions before installing. This repository is community maintained.

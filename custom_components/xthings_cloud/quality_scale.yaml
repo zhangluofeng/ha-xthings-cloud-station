@@ -3,8 +3,12 @@ rules:
   action-setup:
     status: exempt
     comment: No service actions implemented.
-  appropriate-polling: done
-  brands: done
+  appropriate-polling:
+    status: exempt
+    comment: No device data is polled.
+  brands:
+    status: exempt
+    comment: This integration does not create devices or entities.
   common-modules: done
   config-flow: done
   config-flow-test-coverage: done
@@ -24,8 +28,12 @@ rules:
   entity-event-setup:
     status: exempt
     comment: No event-based entity setup.
-  entity-unique-id: done
-  has-entity-name: done
+  entity-unique-id:
+    status: exempt
+    comment: This integration does not create entities.
+  has-entity-name:
+    status: exempt
+    comment: This integration does not create entities.
   runtime-data: done
   test-before-configure: done
   test-before-setup: done
@@ -34,14 +42,11 @@ rules:
   # Silver
   config-entry-unloading: done
   log-when-unavailable:
-    status: done
-    comment: Offloaded to coordinator.
+    status: exempt
+    comment: This integration does not create entities.
   entity-unavailable:
-    status: done
-    comment: Offloaded to coordinator.
-  action-exceptions:
-    status: todo
-    comment: XthingsCloudApiError is not handled in lock, switch and light actions
+    status: exempt
+    comment: This integration does not create entities.
   reauthentication-flow: todo
   parallel-updates: todo
   test-coverage: todo
@@ -54,28 +59,30 @@ rules:
   # Gold
   entity-translations:
     status: exempt
-    comment: Entity uses has_entity_name with name set to None.
+    comment: This integration does not create entities.
   entity-device-class:
     status: exempt
     comment: No platform with device classes.
-  devices: done
+  devices:
+    status: exempt
+    comment: This integration does not create devices.
   entity-category:
     status: exempt
     comment: No diagnostic or configuration entities.
   entity-disabled-by-default:
     status: exempt
-    comment: No entities disabled by default.
+    comment: This integration does not create entities.
   discovery: todo
   stale-devices:
     status: exempt
-    comment: Single config entry, devices managed by coordinator.
+    comment: This integration does not create devices.
   diagnostics: todo
   exception-translations: todo
   icon-translations: todo
   reconfiguration-flow: todo
   dynamic-devices:
     status: exempt
-    comment: Devices are fetched from cloud on each update.
+    comment: This integration does not create devices.
   discovery-update-info:
     status: exempt
     comment: No discoverable entities.
@@ -83,9 +90,13 @@ rules:
     status: exempt
     comment: No repair issues implemented.
   docs-use-cases: done
-  docs-supported-devices: done
+  docs-supported-devices:
+    status: exempt
+    comment: This integration does not create devices.
   docs-supported-functions: done
-  docs-data-update: done
+  docs-data-update:
+    status: exempt
+    comment: No device data is updated.
   docs-known-limitations: done
   docs-troubleshooting: done
   docs-examples:

@@ -1,11 +1,7 @@
-"""DataUpdateCoordinator for Xthings Cloud."""
-
-from datetime import timedelta
-from typing import Any, override
+"""Runtime data for Xthings Cloud remote access and SSO."""
 
 from ha_xthings_cloud import (
     XthingsCloudApiClient,
-    XthingsCloudApiError,
     XthingsCloudAuthError,
     XthingsCloudWebSocket,
 )
@@ -15,16 +11,15 @@ from homeassistant.const import CONF_TOKEN
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import CONF_REFRESH_TOKEN, DEFAULT_SCAN_INTERVAL, DOMAIN, LOGGER
+from .const import CONF_REFRESH_TOKEN, LOGGER
 from .sso import XthingsSsoManager
 
-type XthingsCloudConfigEntry = ConfigEntry[XthingsCloudCoordinator]
+type XthingsCloudConfigEntry = ConfigEntry[XthingsCloudRuntimeData]
 
 
-class XthingsCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Xthings Cloud data update coordinator."""
+class XthingsCloudRuntimeData:
+    """Runtime data used by the remote access and SSO features."""
 
     config_entry: XthingsCloudConfigEntry
 
@@ -32,16 +27,11 @@ class XthingsCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self,
         hass: HomeAssistant,
         client: XthingsCloudApiClient,
-        entry: XthingsCloudConfigEntry,
+        entry: ConfigEntry,
     ) -> None:
         """Initialize the coordinator."""
-        super().__init__(
-            hass,
-            LOGGER,
-            name=DOMAIN,
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
-            config_entry=entry,
-        )
+        self.hass = hass
+        self.config_entry = entry
         self.client = client
         self.sso_manager = XthingsSsoManager(hass, entry, client)
         self.websocket: XthingsCloudWebSocket | None = None
@@ -69,64 +59,42 @@ class XthingsCloudCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 CONF_REFRESH_TOKEN: token_data["refresh_token"],
             },
         )
+        self.client.token = token_data["token"]
 
-    @override
-    async def _async_update_data(self) -> dict[str, Any]:
-        """Fetch latest device data from cloud."""
+    async def async_ensure_token_valid(self) -> None:
+        """Refresh the API token when it has expired."""
         await self._async_ensure_token_valid()
-        try:
-            devices = await self.client.async_get_devices()
-        except XthingsCloudAuthError as err:
-            raise ConfigEntryAuthFailed(
-                "Invalid token, re-authentication required"
-            ) from err
-        except XthingsCloudApiError as err:
-            raise UpdateFailed(f"Failed to fetch data: {err}") from err
-        return {device["id"]: device for device in devices}
 
     async def async_start_websocket(self) -> None:
-        """Start WebSocket connection."""
+        """Start the cloud WebSocket connection."""
         if self.websocket:
             return
-        session = async_get_clientsession(self.hass)
-        token = self.config_entry.data[CONF_TOKEN]
         self.websocket = XthingsCloudWebSocket(
-            session=session,
-            token=token,
+            session=async_get_clientsession(self.hass),
+            token=self.config_entry.data[CONF_TOKEN],
             on_device_status=self._handle_ws_device_status,
             on_token_expired=self._handle_ws_token_expired,
         )
         await self.websocket.async_start()
 
     async def async_stop_websocket(self) -> None:
-        """Stop WebSocket connection."""
+        """Stop the cloud WebSocket connection."""
         if self.websocket:
             await self.websocket.async_stop()
             self.websocket = None
 
     def _handle_ws_device_status(
-        self, device_uuid: str, status: dict[str, Any]
+        self, device_uuid: str, status: dict[str, object]
     ) -> None:
-        """Handle WebSocket device status update."""
-        if not self.data or device_uuid not in self.data:
-            LOGGER.debug(
-                "WebSocket received status for unknown device: %s", device_uuid
-            )
-            return
-        device_data = self.data[device_uuid]
-        device_data.setdefault("status", {}).update(status)
-        LOGGER.debug("WebSocket updated device status: %s", device_uuid)
-        self.async_set_updated_data(self.data)
+        """Log real-time device updates without creating HA entities."""
+        LOGGER.debug("WebSocket updated device status for %s: %s", device_uuid, status)
 
     async def _handle_ws_token_expired(self) -> None:
-        """Handle WebSocket auth expiry, refresh token."""
+        """Refresh the token used by the WebSocket."""
         try:
             await self._async_ensure_token_valid()
         except ConfigEntryAuthFailed:
             LOGGER.error("WebSocket token refresh failed")
             return
-        new_token = self.config_entry.data[CONF_TOKEN]
-        self.client.token = new_token
         if self.websocket:
-            self.websocket.token = new_token
-        LOGGER.info("WebSocket token refreshed successfully")
+            self.websocket.token = self.client.token
