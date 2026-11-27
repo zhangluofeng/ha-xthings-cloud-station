@@ -2,7 +2,7 @@
 
 import logging
 
-DOMAIN = "xthings_cloud"
+DOMAIN = "xthings_cloud_station"
 LOGGER = logging.getLogger(__package__)
 
 CONF_REFRESH_TOKEN = "refresh_token"

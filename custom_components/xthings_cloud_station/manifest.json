@@ -1,7 +1,7 @@
 {
-  "domain": "xthings_cloud",
-  "name": "Xthings Cloud",
-  "codeowners": ["@XthingsJacobs"],
+  "domain": "xthings_cloud_station",
+  "name": "Xthings Cloud Station",
+  "codeowners": ["@zhangluofeng"],
   "config_flow": true,
   "connectivity": ["cloud"],
   "dependencies": ["http"],
@@ -12,5 +12,5 @@
   "quality_scale": "bronze",
   "requirements": ["ha-xthings-cloud==1.0.8"],
   "single_config_entry": true,
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

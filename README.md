@@ -1,6 +1,6 @@
-# Xthings Cloud for Home Assistant
+# Xthings Cloud Station for Home Assistant
 
-This repository provides the community-maintained Xthings Cloud custom integration for Home Assistant.
+This repository provides the community-maintained Xthings Cloud Station custom integration for Home Assistant.
 
 It is not part of the official Home Assistant Core integrations and is not reviewed or supported by the Home Assistant project.
 
@@ -13,8 +13,8 @@ It is not part of the official Home Assistant Core integrations and is not revie
    `https://github.com/zhangluofeng/ha-xthings-cloud-station`
 
 4. Select **Integration** as the repository type.
-5. Install **Xthings Cloud** and restart Home Assistant.
-6. Add **Xthings Cloud** from **Settings > Devices & services**.
+5. Install **Xthings Cloud Station** and restart Home Assistant.
+6. Add **Xthings Cloud Station** from **Settings > Devices & services**.
 
 ## Features
 
@@ -23,5 +23,9 @@ It is not part of the official Home Assistant Core integrations and is not revie
 
 This integration does not discover or control Xthings Cloud devices. It only
 provides the remote-access tunnel and the SSO callback used by the station.
+
+The Station integration uses the `xthings_cloud_station` domain so it can run
+alongside Home Assistant's built-in `xthings_cloud` integration. Remove the
+old custom `xthings_cloud` entry before adding this integration.
 
 Review the code and permissions before installing. This repository is community maintained.

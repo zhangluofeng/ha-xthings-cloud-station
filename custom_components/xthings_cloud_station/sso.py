@@ -145,7 +145,7 @@ class XthingsSsoView(HomeAssistantView):
     """Accept a one-time Cloud code and return the same-origin bridge."""
 
     url = SSO_URL
-    name = "api:xthings_cloud:sso_callback"
+    name = "api:xthings_cloud_station:sso_callback"
     requires_auth = False
     cors_allowed = False
 
