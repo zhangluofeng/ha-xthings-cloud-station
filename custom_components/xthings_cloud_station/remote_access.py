@@ -3,8 +3,10 @@
 import asyncio
 from pathlib import Path
 
-from ha_xthings_cloud import (
-    XthingsCloudApiClient,
+from ha_xthings_cloud import XthingsCloudApiClient
+
+from .frp import async_ensure_frpc, build_frpc_toml
+from .frp_process import (
     async_start_frpc,
     async_stop_frpc,
     remove_frpc_config,
@@ -12,6 +14,7 @@ from ha_xthings_cloud import (
 import yaml
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DOMAIN, LOGGER
 
@@ -91,15 +94,16 @@ async def async_enable_remote_access(
 ) -> str | None:
     """Fetch cloud FRP settings, write config, and start frpc."""
     await _async_stop_frpc(hass)
-    frpc_path_text = await client.async_ensure_frpc(str(_get_frp_dir()))
-    frpc_path = Path(frpc_path_text) if frpc_path_text else None
+    frpc_path = await async_ensure_frpc(async_get_clientsession(hass), _get_frp_dir())
     if not frpc_path:
         return None
 
     config_path = _get_frpc_config_path(hass)
     try:
-        data = await client.async_create_frpc_config(
-            client_id, str(config_path), _get_ha_port(hass)
+        data = await client.async_get_frp_config(client_id)
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        config_path.write_text(
+            build_frpc_toml(data, _get_ha_port(hass), client_id), encoding="utf-8"
         )
     except Exception as err:  # noqa: BLE001
         LOGGER.error("Failed to get or write FRP config: %s", err)
